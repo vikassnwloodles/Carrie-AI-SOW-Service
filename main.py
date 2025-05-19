@@ -1,6 +1,5 @@
-from fastapi import FastAPI, HTTPException
+from fastapi import FastAPI, HTTPException, Header, Depends
 from pydantic import BaseModel
-from fastapi import FastAPI, Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import List, Optional
 from auth import create_access_token, verify_token
@@ -8,6 +7,8 @@ from ai_logic import generate_sow
 from dotenv import load_dotenv
 import os
 load_dotenv()
+
+SECRET = os.environ.get("SECRET_KEY")
 
 JWT_LOGIN_CREDS = {"username": os.environ.get("JWT_USERNAME"), 
                    "password": os.environ.get("JWT_PASSWORD")}
@@ -76,12 +77,12 @@ class FormInput(BaseModel):
 
 
 
-@app.post("/token")
-def login(form_data: OAuth2PasswordRequestForm = Depends()):
-    if form_data.username != JWT_LOGIN_CREDS["username"] or form_data.password != JWT_LOGIN_CREDS["password"]:
-        raise HTTPException(status_code=400, detail="Invalid credentials")
-    access_token = create_access_token(data={"sub": form_data.username})
-    return {"access_token": access_token, "token_type": "bearer"}
+# @app.post("/token")
+# def login(form_data: OAuth2PasswordRequestForm = Depends()):
+#     if form_data.username != JWT_LOGIN_CREDS["username"] or form_data.password != JWT_LOGIN_CREDS["password"]:
+#         raise HTTPException(status_code=400, detail="Invalid credentials")
+#     access_token = create_access_token(data={"sub": form_data.username})
+#     return {"access_token": access_token, "token_type": "bearer"}
 
 
 # Dependency to protect routes
@@ -92,8 +93,20 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     return payload["sub"]
 
 
+# @app.post("/generate-sow")
+# async def generate_scope_of_work(data: FormInput, user: str = Depends(get_current_user)):
+#     try:
+#         print(f"func:generate_scope_of_work>{data=}")
+#         sow = generate_sow(data)
+#         return {"sow": sow}
+#     except Exception as e:
+#         raise HTTPException(status_code=500, detail=str(e))
+
 @app.post("/generate-sow")
-async def generate_scope_of_work(data: FormInput, user: str = Depends(get_current_user)):
+async def generate_scope_of_work(data: FormInput, x_webhook_secret: str = Header(None)):
+    if x_webhook_secret != SECRET:
+        raise HTTPException(status_code=403, detail="Forbidden: Invalid secret")
+    
     try:
         print(f"func:generate_scope_of_work>{data=}")
         sow = generate_sow(data)
