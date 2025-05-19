@@ -6,18 +6,21 @@ load_dotenv()
 
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
+# LOADING ASSETS REQUIRED BY THE PROMPT
+sow_template = open("assets/sow_template.md").read()
+assessment_form = open("assets/assessment_form.md").read()
+
+# FUNCTION THAT TAKES FORM ENTRIES AS INPUT AND RETURNS GENERATED SOW
 def generate_sow(data):
     prompt = f"""
     Generate a detailed Scope of Work (SOW) for the following client:
-    - Company: {data.company_name}
-    - Industry: {data.industry}
-    - Goals: {data.goals}
-    - Current Tools: {data.current_tools}
-    - Key Challenges: {data.challenges}
-    - Timeline: {data.timeline}
-    - Budget: {data.budget}
+    {data}
 
-    The SOW should include objectives, deliverables, AI implementation plan, and next steps.
+    Use the following SOW template for reference:
+    {sow_template}
+
+    To fill "Alignment with Assessment" column, refer to the following form:
+    {assessment_form}
     """
 
     response = client.chat.completions.create(
@@ -30,3 +33,4 @@ def generate_sow(data):
     )
 
     return response.choices[0].message.content.strip()
+
