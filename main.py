@@ -113,8 +113,8 @@ async def generate_scope_of_work(request: Request, x_webhook_secret: str = Heade
         # sow = generate_sow(data)
         # return {"sow": sow}
         form_data = await request.form()  # Accept dynamic form data
-        # data_dict = dict(form_data)  # Convert from MultiDict to plain dict
-        sow = generate_sow(form_data)
+        data_dict = dict(form_data)  # Convert from MultiDict to plain dict
+        sow = generate_sow(data_dict)
         return {"sow": sow}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
