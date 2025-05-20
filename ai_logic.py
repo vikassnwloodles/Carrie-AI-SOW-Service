@@ -1,8 +1,11 @@
 import os
 import openai
-from dotenv import load_dotenv
+from utils import get_datetime_str
 
+
+from dotenv import load_dotenv
 load_dotenv()
+
 
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
@@ -22,6 +25,9 @@ def generate_sow(data):
     To fill "Alignment with Assessment" column, refer to the following form:
     {assessment_form}
     """
+
+    # SAVING `prompt` FOR LOGGING
+    open(f"logs/prompts/prompt_{get_datetime_str()}.txt", "w").write(prompt)
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",

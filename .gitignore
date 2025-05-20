@@ -1,5 +1,6 @@
 env/
 tests/
+logs/
 
 
 # Byte-compiled / optimized / DLL files
