@@ -1,4 +1,5 @@
 from fastapi import FastAPI, HTTPException, Header, Depends, Request
+from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import List, Optional
@@ -14,6 +15,10 @@ JWT_LOGIN_CREDS = {"username": os.environ.get("JWT_USERNAME"),
                    "password": os.environ.get("JWT_PASSWORD")}
 
 app = FastAPI()
+
+# Mount the 'assets' folder at /assets
+app.mount("/assets", StaticFiles(directory="assets"), name="assets")
+
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 
 class FormInput(BaseModel):

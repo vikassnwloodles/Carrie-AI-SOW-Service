@@ -1,6 +1,7 @@
 import os
 import openai
 from utils import get_datetime_str
+import re
 
 
 from dotenv import load_dotenv
@@ -12,12 +13,18 @@ client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 # LOADING ASSETS REQUIRED BY THE PROMPT
 sow_template = open("assets/sow_template.md").read()
 assessment_form = open("assets/assessment_form.md").read()
+# twm_logo_path = "assets/3rd_wave_marketing_logo.png"
+BASE_URL = os.getenv("BASE_URL")
+twm_logo_path = f"{BASE_URL}/assets/3rd_wave_marketing_logo.png"
 
 # FUNCTION THAT TAKES FORM ENTRIES AS INPUT AND RETURNS GENERATED SOW
 def generate_sow(data):
     prompt = f"""
-    Generate a detailed Scope of Work (SOW) for the following client:
+    Generate a detailed Scope of Work (SOW) for the following client and return as HTML:
     {data}
+
+    The SOW should include the following line on the top:
+    {twm_logo_path}
 
     Use the following SOW template for reference:
     {sow_template}
@@ -39,5 +46,10 @@ def generate_sow(data):
         temperature=0.7
     )
 
-    return response.choices[0].message.content.strip()
-
+    raw_response = response.choices[0].message.content
+    processed_response = raw_response.strip()
+    match = re.search(r'(?<=```html\n)(.*?)(?=\n```)', processed_response, re.DOTALL)
+    if match:
+        processed_response = match.group(0)
+    
+    return processed_response
