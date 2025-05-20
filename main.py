@@ -1,4 +1,4 @@
-from fastapi import FastAPI, HTTPException, Header, Depends
+from fastapi import FastAPI, HTTPException, Header, Depends, Request
 from pydantic import BaseModel
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import List, Optional
@@ -103,13 +103,18 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 #         raise HTTPException(status_code=500, detail=str(e))
 
 @app.post("/generate-sow")
-async def generate_scope_of_work(data: FormInput, x_webhook_secret: str = Header(None)):
+# async def generate_scope_of_work(data: FormInput, x_webhook_secret: str = Header(None)):
+async def generate_scope_of_work(request: Request, x_webhook_secret: str = Header(None)):
     if x_webhook_secret != SECRET:
         raise HTTPException(status_code=403, detail="Forbidden: Invalid secret")
     
     try:
-        print(f"func:generate_scope_of_work>{data=}")
-        sow = generate_sow(data)
+        # print(f"func:generate_scope_of_work>{data=}")
+        # sow = generate_sow(data)
+        # return {"sow": sow}
+        form_data = await request.form()  # Accept dynamic form data
+        # data_dict = dict(form_data)  # Convert from MultiDict to plain dict
+        sow = generate_sow(form_data)
         return {"sow": sow}
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
