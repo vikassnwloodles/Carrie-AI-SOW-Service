@@ -27,6 +27,7 @@ def generate_sow(data):
     """
 
     # SAVING `prompt` FOR LOGGING
+    os.makedirs("logs/prompts", exist_ok=True)
     open(f"logs/prompts/prompt_{get_datetime_str()}.txt", "w").write(prompt)
 
     response = client.chat.completions.create(
