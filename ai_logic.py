@@ -3,7 +3,7 @@ import openai
 import re
 from utils import get_datetime_str
 from consts import LOGS_DIR
-from prompt_components.prompts import get_system_prompt, get_user_prompt
+from prompt_components.get_prompts import get_system_prompt, get_user_prompt
 
 
 from dotenv import load_dotenv

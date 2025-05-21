@@ -1,0 +1,1 @@
+system_prompt_template = "You are a helpful AI consultant."
