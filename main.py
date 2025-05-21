@@ -5,6 +5,7 @@ from pydantic import BaseModel
 import uuid
 import pypandoc
 import tempfile
+import re
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import List, Optional
 from auth import create_access_token, verify_token
@@ -126,14 +127,27 @@ async def generate_scope_of_work(request: Request, x_webhook_secret: str = Heade
         # return
         # data_dict = dict(form_data)  # Convert from MultiDict to plain dict
         # sow = generate_sow(data_dict)
-        sow = generate_sow(json_data)
+        sow_html = generate_sow(json_data)
 
         # SAVING `sow` (WHICH IS IN HTML FORMAT) TO A FILE (WILL READ LATER FOR DOCX CONVERSION)
         uuid4 = uuid.uuid4()
         os.makedirs("artifacts", exist_ok=True)
-        open(f"artifacts/sow_{uuid4}.html", "w").write(sow)
 
-        return {"sow": sow, "uuid": uuid4}
+        # REPLACE LOGO URL WITH LOGO FILE PATH BEFORE SAVING TO THE FILE
+
+        # Replace the first <img> src with a new value
+        updated_sow_html = re.sub(
+            r'(<img[^>]+src=["\'])[^"\']+(["\'])',
+            r'\1assets/3rd_wave_marketing_logo.png\2',
+            sow_html,
+            count=1  # Only replace the first match
+        )
+        # Regex to remove <title>...</title> (case-insensitive, multi-line safe)
+        updated_sow_html = re.sub(r'<title\b[^>]*>.*?</title>', '', updated_sow_html, flags=re.IGNORECASE | re.DOTALL)
+
+        open(f"artifacts/sow_{uuid4}.html", "w").write(updated_sow_html)
+
+        return {"sow": sow_html, "uuid": uuid4}
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
