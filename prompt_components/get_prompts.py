@@ -1,13 +1,13 @@
 from .text_assets import (
     sow_style_tag,
-    img_tag_for_logo,
+    logo_md,
     sow_template,
     assessment_form_template,
 )
 from .prompt_templates.system_prompt_templates.system_prompt_template_v1 import (
     system_prompt_template,
 )
-from .prompt_templates.user_prompt_templates.user_prompt_template_v2 import (
+from .prompt_templates.user_prompt_templates.user_prompt_template_v3 import (
     user_prompt_template,
 )
 
@@ -22,7 +22,7 @@ def get_user_prompt(data):
     user_prompt = user_prompt_template.format(
         data=data,
         sow_style_tag=sow_style_tag,
-        img_tag_for_logo=img_tag_for_logo,
+        logo_md=logo_md,
         sow_template=sow_template,
         assessment_form_template=assessment_form_template,
     )

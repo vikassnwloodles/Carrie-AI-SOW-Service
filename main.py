@@ -136,16 +136,22 @@ async def generate_scope_of_work(request: Request, x_webhook_secret: str = Heade
         # REPLACE LOGO URL WITH LOGO FILE PATH BEFORE SAVING TO THE FILE
 
         # Replace the first <img> src with a new value
+        # updated_sow_html = re.sub(
+        #     r'(<img[^>]+src=["\'])[^"\']+(["\'])',
+        #     r'\1assets/3rd_wave_marketing_logo.png\2',
+        #     sow_html,
+        #     count=1  # Only replace the first match
+        # )
         updated_sow_html = re.sub(
-            r'(<img[^>]+src=["\'])[^"\']+(["\'])',
-            r'\1assets/3rd_wave_marketing_logo.png\2',
+            r'!\[\]\([^)]+\)',  # Match ![](anything inside parentheses)
+            r'![](assets/3rd_wave_marketing_logo.png)',  # Replacement string
             sow_html,
             count=1  # Only replace the first match
         )
         # Regex to remove <title>...</title> (case-insensitive, multi-line safe)
         updated_sow_html = re.sub(r'<title\b[^>]*>.*?</title>', '', updated_sow_html, flags=re.IGNORECASE | re.DOTALL)
 
-        open(f"artifacts/sow_{uuid4}.html", "w").write(updated_sow_html)
+        open(f"artifacts/sow_{uuid4}.md", "w").write(updated_sow_html)
 
         return {"sow": sow_html, "uuid": uuid4}
     
@@ -164,7 +170,7 @@ async def download_sow(data: UUIDRequest):
     uuid_str = data.uuid
 
     # Assuming HTML files are saved like: sow/<uuid>.html
-    html_path = f"artifacts/sow_{uuid_str}.html"
+    html_path = f"artifacts/sow_{uuid_str}.md"
     if not os.path.exists(html_path):
         raise HTTPException(status_code=404, detail="HTML file not found")
 
