@@ -1,6 +1,7 @@
 env/
 tests/
 logs/
+artifacts/
 
 
 # Byte-compiled / optimized / DLL files

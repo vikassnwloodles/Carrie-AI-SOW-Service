@@ -1,6 +1,10 @@
 from fastapi import FastAPI, HTTPException, Header, Depends, Request
+from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+import uuid
+import pypandoc
+import tempfile
 from fastapi.security import OAuth2PasswordBearer, OAuth2PasswordRequestForm
 from typing import List, Optional
 from auth import create_access_token, verify_token
@@ -124,8 +128,47 @@ async def generate_scope_of_work(request: Request, x_webhook_secret: str = Heade
         # sow = generate_sow(data_dict)
         sow = generate_sow(json_data)
 
-        return {"sow": sow}
+        # SAVING `sow` (WHICH IS IN HTML FORMAT) TO A FILE (WILL READ LATER FOR DOCX CONVERSION)
+        uuid4 = uuid.uuid4()
+        os.makedirs("artifacts", exist_ok=True)
+        open(f"artifacts/sow_{uuid4}.html", "w").write(sow)
+
+        return {"sow": sow, "uuid": uuid4}
     
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
+
+
+
+# Define request schema
+class UUIDRequest(BaseModel):
+    uuid: str
+
+@app.post("/download-sow")
+async def download_sow(data: UUIDRequest):
+    uuid_str = data.uuid
+
+    # Assuming HTML files are saved like: sow/<uuid>.html
+    html_path = f"artifacts/sow_{uuid_str}.html"
+    if not os.path.exists(html_path):
+        raise HTTPException(status_code=404, detail="HTML file not found")
+
+    # with tempfile.TemporaryDirectory() as tmpdir:
+    # docx_path = os.path.join(tmpdir, f"{uuid_str}.docx")
+    docx_path = os.path.join("artifacts", f"sow_{uuid_str}.docx")
+
+    try:
+        pypandoc.convert_file(html_path, 'docx', outputfile=docx_path)
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=f"Conversion failed: {e}")
+
+    def stream_docx():
+        with open(docx_path, "rb") as f:
+            yield from f
+
+    return StreamingResponse(
+        stream_docx(),
+        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
+        headers={'Content-Disposition': f'attachment; filename=ScopeOfWork_{uuid_str}.docx'}
+    )
