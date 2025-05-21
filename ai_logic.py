@@ -1,7 +1,9 @@
 import os
 import openai
-from utils import get_datetime_str
 import re
+from utils import get_datetime_str
+from consts import LOGS_DIR
+from prompt_components.prompts import get_system_prompt, get_user_prompt
 
 
 from dotenv import load_dotenv
@@ -10,43 +12,34 @@ load_dotenv()
 
 client = openai.OpenAI(api_key=os.getenv("OPENAI_API_KEY"))
 
-# LOADING ASSETS REQUIRED BY THE PROMPT
-sow_template = open("assets/sow_template.md").read()
-assessment_form = open("assets/assessment_form.md").read()
-# twm_logo_path = "assets/3rd_wave_marketing_logo.png"
-BASE_URL = os.getenv("BASE_URL")
-twm_logo_path = f"{BASE_URL}/assets/3rd_wave_marketing_logo.png"
 
 # FUNCTION THAT TAKES FORM ENTRIES AS INPUT AND RETURNS GENERATED SOW
 def generate_sow(data):
-    prompt = f"""
-    Generate a detailed Scope of Work (SOW) for the following client and return as HTML:
-    {data}
-
-    The SOW should include the following line on the top:
-    {twm_logo_path}
-
-    Use the following SOW template for reference:
-    {sow_template}
-
-    To fill "Alignment with Assessment" column, refer to the following form:
-    {assessment_form}
-    """
+    system_prompt = get_system_prompt()
+    user_prompt = get_user_prompt(data)
 
     # SAVING `prompt` FOR LOGGING
-    os.makedirs("logs/prompts", exist_ok=True)
-    open(f"logs/prompts/prompt_{get_datetime_str()}.txt", "w").write(prompt)
+    INPUT_LOGS_DIR = f"{LOGS_DIR}/inputs"
+    os.makedirs(INPUT_LOGS_DIR, exist_ok=True)
+
+    open(f"{INPUT_LOGS_DIR}/user_prompt_{get_datetime_str()}.txt", "w").write(user_prompt)
 
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
-            {"role": "system", "content": "You are a helpful AI consultant."},
-            {"role": "user", "content": prompt}
+            {"role": "system", "content": system_prompt},
+            {"role": "user", "content": user_prompt}
         ],
         temperature=0.7
     )
 
     raw_response = response.choices[0].message.content
+    # SAVING `raw_response` FOR LOGGING
+    OUTPUT_LOGS_DIR = f"{LOGS_DIR}/outputs"
+    os.makedirs(OUTPUT_LOGS_DIR, exist_ok=True)
+
+    open(f"{OUTPUT_LOGS_DIR}/raw_response_{get_datetime_str()}.txt", "w").write(raw_response)
+
     processed_response = raw_response.strip()
     match = re.search(r'(?<=```html\n)(.*?)(?=\n```)', processed_response, re.DOTALL)
     if match:

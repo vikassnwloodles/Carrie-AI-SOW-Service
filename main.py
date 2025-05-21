@@ -117,10 +117,15 @@ async def generate_scope_of_work(request: Request, x_webhook_secret: str = Heade
         # print(f"func:generate_scope_of_work>{data=}")
         # sow = generate_sow(data)
         # return {"sow": sow}
-        form_data = await request.form()  # Accept dynamic form data
-        data_dict = dict(form_data)  # Convert from MultiDict to plain dict
-        sow = generate_sow(data_dict)
+        json_data = await request.json()  # Accept dynamic form data
+        # print(f"{json_data=}")
+        # return
+        # data_dict = dict(form_data)  # Convert from MultiDict to plain dict
+        # sow = generate_sow(data_dict)
+        sow = generate_sow(json_data)
+
         return {"sow": sow}
+    
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
 
