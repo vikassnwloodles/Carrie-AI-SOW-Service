@@ -9,7 +9,7 @@ import textwrap
 
 from ai_logic import generate_sow
 from utils import download_file
-from consts import SERVICE_PROVIDER_LOGO_PATH, ARTIFACTS_DIR
+from consts import SERVICE_PROVIDER_LOGO_PATH, SERVICE_PROVIDER_LOGO_URL, ARTIFACTS_DIR
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -58,13 +58,14 @@ async def generate_scope_of_work(request: Request, x_webhook_secret: str = Heade
         
         # DOWNLOADING CLIENT LOGO
         client_logo_path = f"{ARTIFACTS_DIR}/client_logo_{uuid4}.png"
-        download_file(url=json_data['logo_path'], filename=client_logo_path)
+        client_logo_url = json_data['logo_path']
+        download_file(url=client_logo_url, filename=client_logo_path)
 
         # Adding logos on the top of `sow_md`
         LOGO_TEMPLATE = textwrap.dedent(f"""\
         <p>
-            <img src="{SERVICE_PROVIDER_LOGO_PATH}" style="float: left; height: 80px; display: block;" />
-            <img src="{client_logo_path}" style="float: right; height: 80px; display: block;" />
+            <img src="{SERVICE_PROVIDER_LOGO_URL}" style="float: left; height: 80px; display: block;" />
+            <img src="{client_logo_url}" style="float: right; height: 80px; display: block;" />
         </p>
         <br clear="both">
         <br>
