@@ -34,25 +34,37 @@ async def generate_scope_of_work(request: Request, x_webhook_secret: str = Heade
         json_data = await request.json()  # Accept dynamic form data
         sow_md = generate_sow(json_data)
 
+        # # Adding logos on the top of `sow_md`
+        # LOGOS = textwrap.dedent(f"""\
+        # <table width="100%" style="table-layout: fixed; border: none;">
+        #     <colgroup>
+        #         <col style="width: 50%;" />
+        #         <col style="width: 50%;" />
+        #     </colgroup>
+        #     <tr>
+        #         <td style="text-align: left;">
+        #             <img height="80" src="https://www.3rdwave-marketing.com/carrie-aigent-intake/public/images/logo.png" />
+        #         </td>
+        #         <td style="text-align: right;">
+        #             <img height="80" src="{json_data['logo_path']}" />
+        #         </td>
+        #     </tr>
+        # </table>
+
+
+        # """)
+        
         # Adding logos on the top of `sow_md`
         LOGOS = textwrap.dedent(f"""\
-        <table width="100%" style="table-layout: fixed; border: none;">
-            <colgroup>
-                <col style="width: 50%;" />
-                <col style="width: 50%;" />
-            </colgroup>
-            <tr>
-                <td style="text-align: left;">
-                    <img height="80" src="https://www.3rdwave-marketing.com/carrie-aigent-intake/public/images/logo.png" />
-                </td>
-                <td style="text-align: right;">
-                    <img height="80" src="{json_data['logo_path']}" />
-                </td>
-            </tr>
-        </table>
-
-
+        <p>
+            <img src="https://www.3rdwave-marketing.com/carrie-aigent-intake/public/images/logo.png" style="float: left; height: 80px; display: block;" />
+            <img src="{json_data['logo_path']}" style="float: right; height: 80px; display: block;" />
+        </p>
+        <br clear="both">
+        <br>
+        
         """)
+
         sow_md = LOGOS + sow_md
 
         # SAVING `sow_md` (WHICH IS IN Markdown FORMAT) TO A FILE (WILL READ LATER FOR HTML CONVERSION)
