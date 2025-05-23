@@ -12,8 +12,7 @@ LOGO_TEMPLATE_MOD = textwrap.dedent("""\
             <img height="80" src="{}" />
         </td>
         <td style="text-align: right;">
-            <img height="80" src="{
-            }" />
+            <img height="80" src="{}" />
         </td>
     </tr>
 </table>

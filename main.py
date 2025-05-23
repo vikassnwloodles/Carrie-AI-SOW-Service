@@ -13,8 +13,8 @@ from consts import SERVICE_PROVIDER_LOGO_URL, ARTIFACTS_DIR
 from assets.templates import LOGO_TEMPLATE, LOGO_TEMPLATE_MOD
 
 from dotenv import load_dotenv
-load_dotenv()
 
+load_dotenv()
 
 
 SECRET = os.environ.get("SECRET_KEY")
@@ -37,18 +37,18 @@ async def generate_scope_of_work(request: Request, _: None = Depends(is_authenti
     try:
         json_data = await request.json()  # Accept dynamic form data
         sow_md = generate_sow(json_data)
-        
+
         client_logo_url = ""
         if "logo_path" in json_data:
             # DOWNLOADING CLIENT LOGO
             client_logo_path = f"{ARTIFACTS_DIR}/client_logo_{uuid4}.png"
-            client_logo_url = json_data['logo_path']
+            client_logo_url = json_data["logo_path"]
             download_file(url=client_logo_url, filename=client_logo_path)
 
         # Adding logos on the top of `sow_md`
-        LOGO_TEMPLATE = LOGO_TEMPLATE.format(SERVICE_PROVIDER_LOGO_URL, client_logo_url)
-
-        sow_md_with_logos = LOGO_TEMPLATE + sow_md
+        sow_md_with_logos = (
+            LOGO_TEMPLATE.format(SERVICE_PROVIDER_LOGO_URL, client_logo_url) + sow_md
+        )
 
         # SAVING `sow_md` (WHICH IS IN Markdown FORMAT) TO A FILE (WILL READ LATER FOR HTML CONVERSION)
         os.makedirs(f"{ARTIFACTS_DIR}", exist_ok=True)
@@ -56,10 +56,9 @@ async def generate_scope_of_work(request: Request, _: None = Depends(is_authenti
         open(sow_md_path, "w").write(sow_md)
 
         return {"sow": sow_md_with_logos, "uuid": uuid4}
-    
+
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
 
 
 # Define request schema
@@ -81,16 +80,20 @@ async def download_sow(data: UUIDRequest, _: None = Depends(is_authenticated)):
     client_logo_path = f"{ARTIFACTS_DIR}/client_logo_{uuid_str}.png"
     if not os.path.exists(client_logo_path):
         client_logo_path = ""
-    
-    LOGO_TEMPLATE_MOD = LOGO_TEMPLATE_MOD.format(SERVICE_PROVIDER_LOGO_URL, client_logo_path)
 
     sow_md_path = f"{ARTIFACTS_DIR}/sow_{uuid_str}.md"
     sow_md = open(sow_md_path).read()
-    sow_md_with_logos = LOGO_TEMPLATE_MOD + sow_md
+    sow_md_with_logos = (
+        LOGO_TEMPLATE_MOD.format(SERVICE_PROVIDER_LOGO_URL, client_logo_path) + sow_md
+    )
 
     try:
-        sow_html_with_logos = pypandoc.convert_text(sow_md_with_logos, 'html', format="md")
-        pypandoc.convert_text(sow_html_with_logos, 'docx', format="html", outputfile=docx_path)
+        sow_html_with_logos = pypandoc.convert_text(
+            sow_md_with_logos, "html", format="md"
+        )
+        pypandoc.convert_text(
+            sow_html_with_logos, "docx", format="html", outputfile=docx_path
+        )
     except Exception as e:
         raise HTTPException(status_code=500, detail=f"Conversion failed: {e}")
 
@@ -100,6 +103,8 @@ async def download_sow(data: UUIDRequest, _: None = Depends(is_authenticated)):
 
     return StreamingResponse(
         stream_docx(),
-        media_type='application/vnd.openxmlformats-officedocument.wordprocessingml.document',
-        headers={'Content-Disposition': f'attachment; filename=ScopeOfWork_{uuid_str}.docx'}
+        media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+        headers={
+            "Content-Disposition": f"attachment; filename=ScopeOfWork_{uuid_str}.docx"
+        },
     )
