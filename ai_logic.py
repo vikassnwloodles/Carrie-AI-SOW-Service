@@ -41,8 +41,5 @@ def generate_sow(data):
     open(f"{OUTPUT_LOGS_DIR}/raw_response_{get_datetime_str()}.txt", "w").write(raw_response)
 
     processed_response = raw_response.strip()
-    match = re.search(r'(?<=```html\n)(.*?)(?=\n```)', processed_response, re.DOTALL)
-    if match:
-        processed_response = match.group(0)
     
     return processed_response

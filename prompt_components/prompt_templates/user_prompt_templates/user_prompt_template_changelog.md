@@ -1,3 +1,16 @@
+## v4 - May 23 2025
+
+### Added:
+1. NA
+
+### Changed
+1. NA
+
+### Removed
+1. Removed Logo Placement section because now we are adding logo programatically.
+
+---
+
 ## v3 - May 22 2025
 
 ### Added:
