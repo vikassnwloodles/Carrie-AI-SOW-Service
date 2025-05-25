@@ -3,6 +3,7 @@ from fastapi import Header, Depends
 from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
+from datetime import datetime
 import uuid
 import pypandoc
 import os
@@ -101,10 +102,11 @@ async def download_sow(data: UUIDRequest, _: None = Depends(is_authenticated)):
         with open(docx_path, "rb") as f:
             yield from f
 
+    date_str = datetime.now().strftime('%Y%m%d')
     return StreamingResponse(
         stream_docx(),
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",
         headers={
-            "Content-Disposition": f"attachment; filename=ScopeOfWork_{uuid_str}.docx"
+            f"Content-Disposition": f"attachment; filename=sow-by-3rdwave-marketing-{date_str}.docx"
         },
     )

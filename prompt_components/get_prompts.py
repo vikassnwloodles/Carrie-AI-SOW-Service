@@ -7,7 +7,7 @@ from .text_assets import (
 from .prompt_templates.system_prompt_templates.system_prompt_template_v1 import (
     system_prompt_template,
 )
-from .prompt_templates.user_prompt_templates.user_prompt_template_v4 import (
+from .prompt_templates.user_prompt_templates.user_prompt_template_v5 import (
     user_prompt_template,
 )
 

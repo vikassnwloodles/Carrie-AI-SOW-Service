@@ -1,3 +1,17 @@
+## v5 - May 26 2025
+
+### Added:
+1. Added instruction to make document title and main section headings consistent with those in the original SOW template to maintain clarity and standardization.
+2. Mentioned the document title and main section headings for GPT's reference along with # (for document title) and ## (for main section headings).
+
+### Changed
+1. NA
+
+### Removed
+1. NA
+
+---
+
 ## v4 - May 23 2025
 
 ### Added:
