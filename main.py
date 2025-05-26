@@ -4,23 +4,43 @@ from fastapi.responses import StreamingResponse
 from fastapi.staticfiles import StaticFiles
 from pydantic import BaseModel
 from datetime import datetime
+from contextlib import asynccontextmanager
 import uuid
 import pypandoc
 import os
 
 from ai_logic import generate_sow
+from utils import ResourceNotFoundException
 from utils import download_file
 from consts import SERVICE_PROVIDER_LOGO_URL, ARTIFACTS_DIR
 from assets.templates import LOGO_TEMPLATE, LOGO_TEMPLATE_MOD
+from auto_cleanup.cleanup import delete_old_files
+from auto_cleanup.scheduler import (
+    start_auto_cleanup_scheduler,
+    shutdown_auto_cleanup_scheduler,
+)
 
 from dotenv import load_dotenv
-
 load_dotenv()
-
 
 SECRET = os.environ.get("SECRET_KEY")
 
-app = FastAPI()
+@asynccontextmanager
+async def lifespan(app: FastAPI):
+    ## Startup
+    # Cleanup once at startup
+    delete_old_files()
+
+    # Start daily cleanup scheduler
+    start_auto_cleanup_scheduler()
+
+    yield  # App runs during this time
+
+    ## Shutdown
+    shutdown_auto_cleanup_scheduler()
+
+
+app = FastAPI(lifespan=lifespan)
 
 # Mount the 'assets' folder at /assets
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
@@ -44,7 +64,12 @@ async def generate_scope_of_work(request: Request, _: None = Depends(is_authenti
             # DOWNLOADING CLIENT LOGO
             client_logo_path = f"{ARTIFACTS_DIR}/client_logo_{uuid4}.png"
             client_logo_url = json_data["logo_path"]
-            download_file(url=client_logo_url, filename=client_logo_path)
+            try:
+                download_file(url=client_logo_url, filename=client_logo_path)
+            except ResourceNotFoundException:
+                raise HTTPException(
+                    status_code=404, detail="Resource {client_logo_url} not found."
+                )
 
         # Adding logos on the top of `sow_md`
         sow_md_with_logos = (
@@ -102,7 +127,7 @@ async def download_sow(data: UUIDRequest, _: None = Depends(is_authenticated)):
         with open(docx_path, "rb") as f:
             yield from f
 
-    date_str = datetime.now().strftime('%Y%m%d')
+    date_str = datetime.now().strftime("%Y%m%d")
     return StreamingResponse(
         stream_docx(),
         media_type="application/vnd.openxmlformats-officedocument.wordprocessingml.document",

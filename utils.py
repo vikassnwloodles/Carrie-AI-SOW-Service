@@ -10,6 +10,11 @@ def get_datetime_str():
     return datetime_str
 
 
+class ResourceNotFoundException(Exception):
+    def __init__(self, message):
+        super().__init__(message)
+
+
 def download_file(url, filename):
     response = requests.get(url)
 
@@ -18,4 +23,4 @@ def download_file(url, filename):
         with open(filename, 'wb') as f:
             f.write(response.content)
     else:
-        raise Exception(f"Failed to download file: HTTP {response.status_code}")
+        raise ResourceNotFoundException(f"Failed to download file: HTTP {response.status_code}")
