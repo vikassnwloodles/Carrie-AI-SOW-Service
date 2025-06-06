@@ -19,6 +19,10 @@ from auto_cleanup.scheduler import (
     start_auto_cleanup_scheduler,
     shutdown_auto_cleanup_scheduler,
 )
+from middleware.logging_middleware import LoggingMiddleware
+
+from logging_config import setup_logging
+setup_logging()
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -41,6 +45,7 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(lifespan=lifespan)
+app.add_middleware(LoggingMiddleware)
 
 # Mount the 'assets' folder at /assets
 app.mount("/assets", StaticFiles(directory="assets"), name="assets")
