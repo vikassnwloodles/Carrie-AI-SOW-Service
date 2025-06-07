@@ -29,7 +29,7 @@ def setup_logging():
             },
         },
         "loggers": {
-            "myapp.access": {
+            "carrie_ai_sow_service": {
                 "level": "DEBUG",
                 "handlers": ["file"],
                 "propagate": False,

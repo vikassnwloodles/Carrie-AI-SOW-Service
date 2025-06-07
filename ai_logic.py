@@ -5,6 +5,8 @@ from utils import get_datetime_str
 from consts import LOGS_DIR
 from prompt_components.get_prompts import get_system_prompt, get_user_prompt
 
+import logging
+logger = logging.getLogger("carrie_ai_sow_service")
 
 from dotenv import load_dotenv
 load_dotenv()
@@ -24,6 +26,7 @@ def generate_sow(data):
 
     open(f"{INPUT_LOGS_DIR}/user_prompt_{get_datetime_str()}.txt", "w").write(user_prompt)
 
+    logger.info("Calling OpenAI's `gpt-4o-mini` Model...")
     response = client.chat.completions.create(
         model="gpt-4o-mini",
         messages=[
@@ -33,6 +36,7 @@ def generate_sow(data):
         temperature=0.7
     )
 
+    logger.info("Processing and Returning Model Response...")
     raw_response = response.choices[0].message.content
     # SAVING `raw_response` FOR LOGGING
     OUTPUT_LOGS_DIR = f"{LOGS_DIR}/outputs"
