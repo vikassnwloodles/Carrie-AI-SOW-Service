@@ -11,7 +11,7 @@ LOGS_RETENTION_DAYS = int(os.environ.get("LOGS_RETENTION_DAYS"))
 ARTIFACTS_RETENTION_DAYS = int(os.environ.get("ARTIFACTS_RETENTION_DAYS"))
 
 
-def _delete_old_files(directory: str, retention_days: int, label: str = "log"):
+def _delete_old_files(directory: str, retention_days: int, label: str):
     now = time.time()
     retention_seconds = retention_days * 86400  # 60 * 60 * 24
 
@@ -23,7 +23,7 @@ def _delete_old_files(directory: str, retention_days: int, label: str = "log"):
             file_path = os.path.join(root, filename)
             if os.path.isfile(file_path):
                 file_age = now - os.path.getmtime(file_path)
-                if file_age > retention_seconds:
+                if retention_seconds and file_age > retention_seconds:
                     os.remove(file_path)
 
 
